@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scitc.nuyoahz.thunderstudiobackendspringboot.mapper.WeeklyMapper">
+
+    <resultMap id="BaseResultMap" type="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.entity.Weekly">
+        <id property="weeklyId" column="weekly_id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="fileName" column="file_name" jdbcType="VARCHAR"/>
+        <result property="submitTime" column="submit_time" jdbcType="TIMESTAMP"/>
+        <result property="evaluate" column="evaluate" jdbcType="LONGVARCHAR"/>
+        <result property="filePath" column="file_path" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        weekly_id
+        ,uid,file_name,
+        submit_time,evaluate,file_path
+    </sql>
+    <update id="updateEvaluate">
+        UPDATE weekly
+        SET evaluate = #{evaluateContent}
+        WHERE weekly_id = #{weeklyId}
+    </update>
+    <select id="queryWeeklyNumber" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM weekly
+        WHERE uid = #{uid}
+          AND submit_time &gt;= (CURDATE() - INTERVAL (WEEKDAY(CURDATE())) DAY)
+          AND submit_time &lt;= (CURDATE() + INTERVAL (6 - WEEKDAY(CURDATE())) DAY);
+    </select>
+    <select id="queryWeeklyList"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.WeeklyList">
+        SELECT weekly_id,
+               file_name,
+               DATE_FORMAT(submit_time, '%Y-%m-%d %H:%i:%s') as submitTime,
+               evaluate,
+               CONCAT(#{urlPrefix}, file_path) as filePath
+        FROM weekly
+        WHERE uid = #{uid}
+        ORDER BY submitTime DESC
+    </select>
+    <select id="queryWeeklyRecord"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.WeeklyRecord">
+        SELECT w.weekly_id,
+               u.uid,
+               u.student_class,
+               u.name,
+               w.file_name,
+               DATE_FORMAT(w.submit_time, '%Y-%m-%d %H:%i:%s') as submitTime,
+               w.evaluate,
+               CONCAT(#{urlPrefix}, file_path)                 as filePath
+        FROM weekly w
+                 LEFT JOIN user u ON w.uid = u.uid
+        WHERE DATE(submit_time) BETWEEN CURDATE() - INTERVAL (WEEKDAY(CURDATE())) DAY AND CURDATE() + INTERVAL (6 - WEEKDAY(CURDATE())) DAY
+    </select>
+    <select id="queryWeeklyRecordAll"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.WeeklyRecord">
+        SELECT w.weekly_id,
+               u.uid,
+               u.student_class,
+               u.name,
+               w.file_name,
+               DATE_FORMAT(w.submit_time, '%Y-%m-%d %H:%i:%s') as submitTime,
+               w.evaluate,
+               CONCAT(#{urlPrefix}, file_path)                 as filePath
+        FROM weekly w
+                 LEFT JOIN user u ON w.uid = u.uid
+    </select>
+</mapper>

@@ -1,0 +1,28 @@
+logging:
+  level:
+    root: info
+spring:
+  datasource:
+    url:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username:
+    password:
+  data:
+    redis:
+      database: 0
+      host:
+      port:
+      password:
+      timeout: 1000
+      jedis:
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+
+host:
+  url: 'http://127.0.0.1:8081'
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

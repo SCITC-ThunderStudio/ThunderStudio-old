@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scitc.nuyoahz.thunderstudiobackendspringboot.mapper.UserMapper">
+
+    <resultMap id="BaseResultMap" type="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.entity.User">
+        <id property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="studentClass" column="student_class" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="joinDate" column="join_date" jdbcType="TIMESTAMP"/>
+        <result property="questionNumber" column="question_number" jdbcType="INTEGER"/>
+        <result property="principal" column="principal" jdbcType="INTEGER"/>
+        <result property="state" column="state" jdbcType="INTEGER"/>
+        <result property="authority" column="authority" jdbcType="INTEGER"/>
+        <result property="clockInState" column="clock_in_state" jdbcType="INTEGER"/>
+        <result property="weeklyState" column="weekly_state" jdbcType="INTEGER"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="avatarPath" column="avatar_path" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        uid
+        ,student_class,name,
+        sex,email,join_date,
+        question_number,principal,state,
+        authority,clock_in_state,weekly_state,
+        password,avatar_path
+    </sql>
+    <insert id="insertTrainingList">
+        INSERT INTO user (uid, student_class, sex, name, email, principal)
+        VALUES
+        <foreach collection="trainingList" separator="," item="training" index="index">
+            (#{training.uid},#{training.studentClass},#{training.sex},#{training.name},#{training.email},#{training.principal})
+        </foreach>
+        ON DUPLICATE KEY UPDATE uid = VALUES(uid);
+    </insert>
+    <update id="updatePassword">
+        UPDATE user
+        SET password = #{newPassword}
+        WHERE uid = #{uid}
+    </update>
+    <update id="updateQuestionNumber">
+        UPDATE user
+        SET question_number = question_number + #{questionNumber}
+        WHERE uid = #{uid}
+    </update>
+    <update id="updateClockInState">
+        UPDATE user
+        SET clock_in_state = #{clockInState}
+        WHERE uid = #{uid}
+    </update>
+    <update id="updateWeeklyState">
+        UPDATE user
+        SET weekly_state = #{weeklyState}
+        WHERE uid = #{uid}
+    </update>
+    <update id="updateAvatarPath">
+        UPDATE user
+        SET avatar_path = #{avatarPath}
+        WHERE uid = #{uid}
+    </update>
+    <update id="updatePersonnelState">
+        UPDATE user
+        SET state = #{personnelState}
+        WHERE uid = #{uid}
+    </update>
+    <update id="updateClockInStateAll">
+        UPDATE user
+        SET clock_in_state = 0
+        WHERE `state` = 1;
+    </update>
+    <update id="updateWeeklyStateAll">
+        UPDATE user
+        SET weekly_state = 0
+        WHERE `state` = 1
+    </update>
+    <select id="queryClockInListF"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.ClockInListF">
+        SELECT uid, student_class, name
+        FROM user
+        WHERE clock_in_state = 0
+          AND uid != 20163021
+          AND `state` = 1;
+    </select>
+    <select id="queryOverview"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.Overview">
+        SELECT COUNT(*)                   AS totalCount,
+               SUM(IF(`state` = 0, 1, 0)) AS withdrawalCount,
+               SUM(IF(`state` = 1, 1, 0)) AS inTrainingCount,
+               SUM(IF(`state` = 2, 1, 0)) AS graduatedCount
+        FROM user
+        WHERE uid &lt;&gt; 20163021;
+    </select>
+    <select id="queryRank" resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.Rank">
+        SELECT uid,
+               student_class,
+               name,
+               question_number,
+               avatar_path
+        FROM user
+        WHERE uid &lt;&gt; 20163021
+        ORDER BY question_number DESC
+        LIMIT 10;
+    </select>
+    <select id="queryUserInfo"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.UserInfo">
+        SELECT uid,
+               student_class,
+               name,
+               email,
+               DATE_FORMAT(join_date, '%Y-%m-%d') AS joinDate,
+               question_number,
+               CASE
+                   WHEN authority = 0 THEN '管理员'
+                   WHEN authority = 1 THEN '负责人'
+                   WHEN authority = 2 THEN '训员'
+                   END                            AS authority,
+               CONCAT(#{host}, avatar_path)       AS avatarPath,
+               (SELECT COUNT(*) + 1
+                FROM user
+                WHERE question_number > u.question_number
+                  AND uid != 20163021)            AS ranking
+        FROM user u
+        WHERE uid = #{uid}
+    </select>
+    <select id="queryTrainee"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.TraineeList">
+        SELECT uid,
+               student_class,
+               name,
+               sex,
+               state,
+               clock_in_state,
+               weekly_state
+        FROM user
+        WHERE principal = #{uid}
+    </select>
+    <select id="queryWeeklyListF"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.WeeklyListF">
+        SELECT uid,
+               student_class,
+               name
+        FROM user
+        WHERE weekly_state = 0
+          AND uid != 20163021
+          AND `state` NOT IN (0, 2)
+    </select>
+    <select id="queryPersonnelList"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.PersonnelList">
+        SELECT u.uid,
+               u.student_class,
+               u.sex,
+               u.name,
+               u.question_number,
+               p.name AS principal,
+               u.authority,
+               u.state
+        FROM user u
+                 LEFT JOIN user p ON u.principal = p.uid
+    </select>
+</mapper>

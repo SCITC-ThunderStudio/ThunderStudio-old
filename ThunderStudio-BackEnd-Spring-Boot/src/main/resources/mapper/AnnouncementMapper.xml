@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scitc.nuyoahz.thunderstudiobackendspringboot.mapper.AnnouncementMapper">
+
+    <resultMap id="BaseResultMap" type="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.entity.Announcement">
+        <id property="announcementId" column="announcement_id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="title" column="title" jdbcType="VARCHAR"/>
+        <result property="content" column="content" jdbcType="VARCHAR"/>
+        <result property="creationTime" column="creation_time" jdbcType="TIMESTAMP"/>
+        <result property="isRemind" column="is_remind" jdbcType="INTEGER"/>
+        <result property="reminderTime" column="reminder_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        announcement_id,uid,title,
+        content,creation_time,is_remind,
+        reminder_time
+    </sql>
+    <select id="queryAnnouncement"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.AnnouncementList">
+        SELECT a.title,
+               a.content,
+               DATE_FORMAT(a.creation_time, '%Y-%m-%d %H:%i:%s') as creationTime
+        FROM announcement a
+                 JOIN user u
+        WHERE a.uid = u.uid
+        LIMIT 5;
+    </select>
+    <select id="queryAnnouncementAll"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.AnnouncementAllList">
+        SELECT a.announcement_id,
+               u.name                                            as name,
+               a.title,
+               a.content,
+               DATE_FORMAT(a.creation_time, '%Y-%m-%d %H:%i:%s') as creationTime
+        FROM announcement a
+                 JOIN user u
+        WHERE a.uid = u.uid
+    </select>
+</mapper>

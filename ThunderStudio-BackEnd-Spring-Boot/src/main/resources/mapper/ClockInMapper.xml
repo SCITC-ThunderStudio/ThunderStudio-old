@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.scitc.nuyoahz.thunderstudiobackendspringboot.mapper.ClockInMapper">
+
+    <resultMap id="BaseResultMap" type="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.entity.ClockIn">
+        <id property="recordsId" column="records_id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="number" column="number" jdbcType="INTEGER"/>
+        <result property="logs" column="logs" jdbcType="LONGVARCHAR"/>
+        <result property="submitTime" column="submit_time" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="update_time" jdbcType="VARCHAR"/>
+        <result property="picturePath" column="picture_path" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        records_id
+        ,uid,number,
+        logs,submit_time,update_time,
+        picture_path
+    </sql>
+    <update id="updateClockIn">
+        UPDATE clock_in
+        SET number       = #{number},
+            logs         = #{logs},
+            update_time  = #{updateTime},
+            picture_path = #{picturePath}
+        WHERE records_id = #{recordsId}
+    </update>
+    <select id="queryClockInRecord"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.ClockInRecord">
+        SELECT c.records_id,
+               u.uid,
+               u.student_class,
+               u.name,
+               c.number,
+               c.logs,
+               DATE_FORMAT(submit_time, '%Y-%m-%d %H:%i:%s') AS submitTime,
+               DATE_FORMAT(update_time, '%Y-%m-%d %H:%i:%s') AS updateTime,
+               CONCAT(#{urlPrefix}, c.picture_path)          AS picturePath
+        FROM clock_in c
+                 LEFT JOIN user u ON c.uid = u.uid
+        WHERE DATE(submit_time) = CURDATE()
+          AND u.state = 1
+    </select>
+    <select id="queryClockInRecordAll"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.ClockInRecord">
+        SELECT c.records_id,
+               u.uid,
+               u.student_class,
+               u.name,
+               c.number,
+               c.logs,
+               DATE_FORMAT(submit_time, '%Y-%m-%d %H:%i:%s') AS submitTime,
+               DATE_FORMAT(update_time, '%Y-%m-%d %H:%i:%s') AS updateTime,
+               CONCAT(#{urlPrefix}, c.picture_path)          AS picturePath
+        FROM clock_in c
+                 LEFT JOIN user u on c.uid = u.uid
+    </select>
+    <select id="queryClockInList"
+            resultType="com.scitc.nuyoahz.thunderstudiobackendspringboot.model.dto.ClockInList">
+        SELECT records_id,
+               DATE_FORMAT(submit_time, '%Y-%m-%d %H:%i:%s') AS submitTime,
+               DATE_FORMAT(update_time, '%Y-%m-%d %H:%i:%s') AS updateTime,
+               number,
+               logs,
+               CONCAT(#{urlPrefix}, picture_path)            AS picturePath
+        FROM clock_in
+        WHERE uid = #{uid}
+        ORDER BY submit_time DESC
+    </select>
+    <select id="queryTotalToday" resultType="java.lang.Integer">
+        SELECT COUNT(*) AS recordCount
+        FROM clock_in
+        WHERE DATE(submit_time) = CURDATE()
+          AND uid = #{uid};
+    </select>
+    <select id="queryQuestionQuantityDistribution" resultType="java.util.Map">
+        SELECT number, COUNT(*) as totalRecords
+        FROM clock_in
+        WHERE DATE(submit_time) = CURDATE()
+        GROUP BY number;
+    </select>
+</mapper>

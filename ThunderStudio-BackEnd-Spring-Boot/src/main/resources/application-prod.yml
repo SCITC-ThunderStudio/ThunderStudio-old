@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: jdbc:mysql://47.120.65.81:9000/thunderstudiodbtest
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username:
+    password:
+  data:
+    redis:
+      database: 0
+      host:
+      port:
+      password:
+      timeout: 1000
+      jedis:
+        pool:
+          max-active: 8
+          max-wait: -1
+          max-idle: 8
+          min-idle: 0
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+host:
+  url: 'http://47.120.65.81:8081'
